@@ -14,6 +14,22 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquerymobile/1.4.5/jquery.mobile.min.js"></script>
 
     <style>
+        .wrap {
+            white-space: normal !important;
+        }
+        
+        .ui-block-a {
+            width: 5% !important;
+        }
+        
+        .ui-block-b {
+            width: 90% !important;
+        }
+        
+        .ui-block-c {
+            width: 5% !important;
+        }
+        
         .ui-listview,
         .ui-listview>li {
             padding-left: 0.25em;
@@ -31,7 +47,6 @@
         [data-role="content"] {
             margin-top: 10px;
         }
-
     </style>
 </head>
 
@@ -42,9 +57,14 @@
             <h3>Movie List</h3>
         </div>
         <form>
-            <label for="searchTerm">Search:</label>
-            <input type="search" name="searchTerm" id="searchTerm" value="">
-            <a href="#" data-role="button" data-icon="search" data-iconpos="notext" id="searchbtn">search</a>
+            <div class="ui-grid-b">
+                <div class="ui-block-a">
+                    <label for="searchTerm">Search:</label></div>
+                <div class="ui-block-b">
+                    <input type="search" name="searchTerm" id="searchTerm" value=""></div>
+                <div class="ui-block-c">
+                    <a href="#" data-role="button" data-icon="search" data-iconpos="notext" id="searchbtn">search</a></div>
+            </div>
         </form>
         <div data-role="content">
             <ul data-role="listview" id="movie-list">
@@ -55,23 +75,42 @@
             <h1>&copy; 2017</h1>
         </div>
     </div>
+    <div data-role="page" id="moviedetails">
 
+        <div data-role="content" id="details">
+            <ul data-role="listview">
+            </ul>
+        </div>
 
+    </div>
     <script>
+        var entry = {
+            movieID: "N/A",
+            Title: "N/A",
+            path: "no_image.png",
+            overview: "N/A",
+            popularity: "N/A",
+            first_air_date: "N/A"
+
+        };
+        var detailedArr = [];
         $(document).on('pageinit', '#home', function() {
             var movie = null;
             $searchbtn = $("#searchbtn");
             $searchTerm = $("#searchTerm");
+            $list = $('#movie-list');
             var movieInfo = {
                 id: null,
                 result: null
             };
-            var API_key = '5fbddf6b517048e25bc3ac1bbeafb919';
+
+            var API_key = '31715fcf36132790e17c1ed113a3c822';
             var url = 'http://api.themoviedb.org/3/',
-                mode = 'search/movie?query=',
+                mode = 'search/multi?query=',
                 movieName = null,
                 key = '&api_key=' + API_key;
             $searchbtn.on("click", function() {
+                $list.empty();
                 movie = $searchTerm.val();
                 movieName = '&query=' + encodeURI(movie);
                 // Call AJAX right away!
@@ -89,15 +128,103 @@
             })
             // Please replace API key with your own right away!
             function parseJSONP(result) {
-                movieInfo.result = result.results;
-                $.each(result.results, function(i, row) {
-                    $('#movie-list').append('<li class="movieItem"><a href="" data-id="' + row.id + '"><img src="http://image.tmdb.org/t/p/w92' + row.poster_path + '"/><h3>' + row.original_title + '</h3><p>Popularity: ' + parseFloat(row.popularity).toFixed(2) + '</p></a></li>');
-                });
+
+                for (var obj = 0; obj < result.results.length; obj++) {
+                    movieInfo.id = obj;
+                    movieInfo.result = result.results[obj];
+
+                    console.log(result.results[obj]);
+                    if (result.results[obj].id != "" && result.results[obj].id != null) {
+                        entry.movieID = result.results[obj].id;
+                    }
+                    if (result.results[obj].overview != "" && result.results[obj].overview != null) {
+                        entry.overview = result.results[obj].overview;
+                    }
+                    if (result.results[obj].first_air_date != "" && result.results[obj].first_air_date != null) {
+                        entry.first_air_date = result.results[obj].first_air_date;
+                    }
+                    if (result.results[obj].popularity != "" && result.results[obj].popularity != null) {
+                        entry.popularity = result.results[obj].popularity;
+                    }
+                    if (result.results[obj].media_type == "tv") {
+                        entry.Title = result.results[obj].name + "(TV series)";
+                    } else {
+
+                        entry.Title = result.results[obj].original_title
+                    }
+                    if (result.results[obj].poster_path != "" && result.results[obj].poster_path != null && result.results[obj].poster_path != "null") {
+                        entry.path = "http://image.tmdb.org/t/p/w92" + result.results[obj].poster_path;
+                    }
+
+
+
+                    if (result.results[obj].media_type == "person") {
+                        for (i = 0; i < result.results[obj].known_for.length; i++) {
+
+                            if (result.results[obj].known_for[i].first_air_date != "" && result.results[obj].known_for[i].first_air_date != null) {
+                                entry.first_air_date = result.results[obj].known_for[i].first_air_date;
+                            }
+                            if (result.results[obj].known_for[i].overview != "" && result.results[obj].known_for[i].overview != null) {
+                                entry.overview = result.results[obj].known_for[i].overview;
+                            }
+                            if (result.results[obj].popularity != "" && result.results[obj].known_for[i].popularity != null) {
+                                entry.popularity = result.results[obj].known_for[i].popularity;
+                            }
+                            if (result.results[obj].media_type == "tv") {
+                                entry.Title = result.results[obj].known_for[i].name + "(TV series)";
+                            } else {
+
+                                entry.Title = result.results[obj].known_for[i].original_title
+                            }
+                            if (result.results[obj].known_for[i].id != "" && result.results[obj].known_for[i].id != null) {
+                                entry.movieID = result.results[obj].known_for[i].id;
+                            }
+                            if (result.results[obj].known_for[i].poster_path != "" && result.results[obj].known_for[i].poster_path != null && result.results[obj].known_for[i].poster_path != "null") {
+                                entry.path = "http://image.tmdb.org/t/p/w92" + result.results[obj].known_for[i].poster_path;
+                            }
+                        }
+                    }
+
+                    $list.append('<li class="movieItem"><a href="#moviedetails" data-id="' + entry.movieID + '"><img src="' +
+                        entry.path + '"/><h3>' + entry.Title + '</h3><p>' + entry.overview + '</p></a></li>');
+
+
+
+
+                    detailedArr[obj] = entry;
+                }
+
                 $('#movie-list').listview('refresh');
+
             };
+
+            $list.on("click", "a", function() {
+
+                for (var i = 0; i < detailedArr.length; i++) {
+
+                    if (detailedArr[i].movieID == $(this).data("id")) {
+                        entry = detailedArr[i].movieID;
+                    }
+                }
+                console.log(entry);
+
+            });
+
 
         });
 
+        $(document).on('pagebeforeshow', '#moviedetails', function() {
+
+            $detail = $("#moviedetails").find("#details");
+            $detail.find("ul").empty();
+            $detail.find("ul").append(
+
+                '<li data-icon="back"><a data-rel="back"> <img src="' +
+                entry.path + '"/><h3>' + entry.Title + '</h3><p class="wrap">' + entry.overview + '</p><p>release date:' + entry.first_air_date + '</p><p>popularity:' + parseFloat(entry.popularity).toFixed(2) + '</p> </a> </li>'
+            );
+            $("ul").listview('refresh');
+
+        });
     </script>
 
 </body>
