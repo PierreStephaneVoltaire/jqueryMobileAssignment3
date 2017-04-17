@@ -47,7 +47,6 @@
         [data-role="content"] {
             margin-top: 10px;
         }
-
     </style>
 </head>
 
@@ -132,10 +131,11 @@
             // Please replace API key with your own right away!
 
             function parseJSONP(result) {
-                //trust me ,this is works...somehow...
-                var index = 0;
+
                 for (var obj = 0; obj < result.results.length; obj++) {
-                    //check if the object has the properties that i need (i won't chick title since it wouldn't be in the DB if it was null)
+                    // movieInfo.id = obj;
+                    //movieInfo.result = result.results[obj];
+                    //check if its empty then modify entry
                     if (result.results[obj].id != "" && result.results[obj].id != null) {
                         entry.movieID = result.results[obj].id;
                     }
@@ -148,14 +148,12 @@
                     if (result.results[obj].popularity != "" && result.results[obj].popularity != null) {
                         entry.popularity = result.results[obj].popularity;
                     }
-                    //add tv to tv series
                     if (result.results[obj].media_type == "tv") {
                         entry.Title = result.results[obj].name + "(TV series)";
                     } else {
 
                         entry.Title = result.results[obj].original_title
                     }
-                    //check if the poster is there
                     if (result.results[obj].poster_path != "" && result.results[obj].poster_path != null && result.results[obj].poster_path != "null") {
                         entry.path = "http://image.tmdb.org/t/p/w92" + result.results[obj].poster_path;
                     }
@@ -192,8 +190,7 @@
                                 entry.path + '"/><h3>' + entry.Title + '</h3><p>' + entry.overview + '</p></a></li>');
                             //add to array
                             const temp = Object.values(entry);
-                            detailedArr[index] = temp;
-                            index++;
+                            detailedArr[obj] = temp;
                         }
 
                     } else {
@@ -202,9 +199,8 @@
                             entry.path + '"/><h3>' + entry.Title + '</h3><p>' + entry.overview + '</p></a></li>');
                         //add to array
                         const temp = Object.values(entry);
-                        detailedArr[index] = temp;
+                        detailedArr[obj] = temp;
                     }
-                    index++;
                 }
 
                 $('#movie-list').listview('refresh');
@@ -214,8 +210,9 @@
             $list.on("click", "a", function() {
 
                 for (var i = 0; i < detailedArr.length; i++) {
-                    //i know, i could have sent the actual object. butr it kept overwriting all the elements in the array when i used the same obj.(yes, i tried making a temp variable...and it failed)
+                    console.log(detailedArr[i])
                     if (detailedArr[i][0] == $(this).data("id")) {
+
                         entry.movieID = detailedArr[i][0];
                         entry.first_air_date = detailedArr[i][5];
                         entry.overview = detailedArr[i][3];
@@ -224,23 +221,27 @@
                         entry.Title = detailedArr[i][1];
                     }
                 }
+                console.log(entry);
 
             });
+
 
         });
 
         $(document).on('pagebeforeshow', '#moviedetails', function() {
+
             $detail = $("#moviedetails").find("#details");
             $detail.find("ul").empty();
             $detail.find("ul").append(
+
                 '<li data-icon="back"><a data-rel="back"> <img src="' +
                 entry.path + '"/><h3>' + entry.Title + '</h3><p class="wrap">' + entry.overview + '</p><p>release date:' + entry.first_air_date + '</p><p>popularity:' + parseFloat(entry.popularity).toFixed(2) + '</p> </a> </li>'
             );
             $("ul").listview('refresh');
 
         });
-
     </script>
+
 </body>
 
 </html>
