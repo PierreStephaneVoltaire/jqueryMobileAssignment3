@@ -84,15 +84,17 @@
 
     </div>
     <script>
+        //entry object
         var entry = {
             movieID: "N/A",
             Title: "N/A",
-            path: "no_image.png",
+            path: "img/no_image.png",
             overview: "N/A",
             popularity: "N/A",
             first_air_date: "N/A"
 
         };
+        //array for details
         var detailedArr = [];
         $(document).on('pageinit', '#home', function() {
             var movie = null;
@@ -127,13 +129,13 @@
 
             })
             // Please replace API key with your own right away!
+
             function parseJSONP(result) {
 
                 for (var obj = 0; obj < result.results.length; obj++) {
-                    movieInfo.id = obj;
-                    movieInfo.result = result.results[obj];
-
-                    console.log(result.results[obj]);
+                    // movieInfo.id = obj;
+                    //movieInfo.result = result.results[obj];
+                    //check if its empty then modify entry
                     if (result.results[obj].id != "" && result.results[obj].id != null) {
                         entry.movieID = result.results[obj].id;
                     }
@@ -156,9 +158,8 @@
                         entry.path = "http://image.tmdb.org/t/p/w92" + result.results[obj].poster_path;
                     }
 
-
-
                     if (result.results[obj].media_type == "person") {
+
                         for (i = 0; i < result.results[obj].known_for.length; i++) {
 
                             if (result.results[obj].known_for[i].first_air_date != "" && result.results[obj].known_for[i].first_air_date != null) {
@@ -170,28 +171,36 @@
                             if (result.results[obj].popularity != "" && result.results[obj].known_for[i].popularity != null) {
                                 entry.popularity = result.results[obj].known_for[i].popularity;
                             }
+                            //if it's a tv series add tv in the title && since title is never null i won't check for that
                             if (result.results[obj].media_type == "tv") {
                                 entry.Title = result.results[obj].known_for[i].name + "(TV series)";
                             } else {
-
+                                //else just add the title
                                 entry.Title = result.results[obj].known_for[i].original_title
                             }
+
                             if (result.results[obj].known_for[i].id != "" && result.results[obj].known_for[i].id != null) {
                                 entry.movieID = result.results[obj].known_for[i].id;
                             }
                             if (result.results[obj].known_for[i].poster_path != "" && result.results[obj].known_for[i].poster_path != null && result.results[obj].known_for[i].poster_path != "null") {
                                 entry.path = "http://image.tmdb.org/t/p/w92" + result.results[obj].known_for[i].poster_path;
                             }
+                            //update view
+                            $list.append('<li class="movieItem"><a href="#moviedetails" data-id="' + entry.movieID + '"><img src="' +
+                                entry.path + '"/><h3>' + entry.Title + '</h3><p>' + entry.overview + '</p></a></li>');
+                            //add to array
+                            const temp = Object.values(entry);
+                            detailedArr[obj] = temp;
                         }
+
+                    } else {
+                        //update view(should have made a function for this...)
+                        $list.append('<li class="movieItem"><a href="#moviedetails" data-id="' + entry.movieID + '"><img src="' +
+                            entry.path + '"/><h3>' + entry.Title + '</h3><p>' + entry.overview + '</p></a></li>');
+                        //add to array
+                        const temp = Object.values(entry);
+                        detailedArr[obj] = temp;
                     }
-
-                    $list.append('<li class="movieItem"><a href="#moviedetails" data-id="' + entry.movieID + '"><img src="' +
-                        entry.path + '"/><h3>' + entry.Title + '</h3><p>' + entry.overview + '</p></a></li>');
-
-
-
-
-                    detailedArr[obj] = entry;
                 }
 
                 $('#movie-list').listview('refresh');
@@ -201,9 +210,15 @@
             $list.on("click", "a", function() {
 
                 for (var i = 0; i < detailedArr.length; i++) {
+                    console.log(detailedArr[i])
+                    if (detailedArr[i][0] == $(this).data("id")) {
 
-                    if (detailedArr[i].movieID == $(this).data("id")) {
-                        entry = detailedArr[i].movieID;
+                        entry.movieID = detailedArr[i][0];
+                        entry.first_air_date = detailedArr[i][5];
+                        entry.overview = detailedArr[i][3];
+                        entry.path = detailedArr[i][2];
+                        entry.popularity = detailedArr[i][4];
+                        entry.Title = detailedArr[i][1];
                     }
                 }
                 console.log(entry);
