@@ -47,7 +47,6 @@
         [data-role="content"] {
             margin-top: 10px;
         }
-
     </style>
 </head>
 
@@ -57,16 +56,16 @@
         <div data-role="header">
             <h3>Movie List</h3>
         </div>
-        <form>
-            <div class="ui-grid-b">
-                <div class="ui-block-a">
-                    <label for="searchTerm">Search:</label></div>
-                <div class="ui-block-b">
-                    <input type="search" name="searchTerm" id="searchTerm" value=""></div>
-                <div class="ui-block-c">
-                    <a href="#" data-role="button" data-icon="search" data-iconpos="notext" id="searchbtn">search</a></div>
-            </div>
-        </form>
+
+        <div class="ui-grid-b">
+            <div class="ui-block-a">
+                <label for="searchTerm">Search:</label></div>
+            <div class="ui-block-b">
+                <input type="search" name="searchTerm" id="searchTerm" value=""></div>
+            <div class="ui-block-c">
+                <a href="#" data-role="button" data-icon="search" data-iconpos="notext" id="searchbtn">search</a></div>
+        </div>
+
         <div data-role="content">
             <ul data-role="listview" id="movie-list">
             </ul>
@@ -102,17 +101,21 @@
             $searchbtn = $("#searchbtn");
             $searchTerm = $("#searchTerm");
             $list = $('#movie-list');
-            var movieInfo = {
-                id: null,
-                result: null
-            };
-
             var API_key = '31715fcf36132790e17c1ed113a3c822';
             var url = 'http://api.themoviedb.org/3/',
                 mode = 'search/multi?query=',
                 movieName = null,
                 key = '&api_key=' + API_key;
             $searchbtn.on("click", function() {
+                ajaxinit();
+
+            })
+            $searchTerm.on("change", function() {
+                ajaxinit();
+
+            });
+
+            function ajaxinit() {
                 $list.empty();
                 movie = $searchTerm.val();
                 movieName = '&query=' + encodeURI(movie);
@@ -126,9 +129,7 @@
                         alert('Network error has occurred please try again!');
                     }
                 });
-
-
-            })
+            }
             // Please replace API key with your own right away!
 
             function parseJSONP(result) {
@@ -239,7 +240,6 @@
             $("ul").listview('refresh');
 
         });
-
     </script>
 </body>
 
